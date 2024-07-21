@@ -1,0 +1,402 @@
+﻿-- Creating the students_testt table
+CREATE TABLE students_testt (
+    name CHAR(20),
+    enrollment_date DATE
+);
+
+
+-- Selecting all from students_testt
+SELECT * FROM public.students_testt;
+
+
+-- DDL (Data Definition Language) operations
+-- Adding a column
+ALTER TABLE public.students_testt
+ADD COLUMN email VARCHAR(100);
+
+
+-- Dropping a table
+DROP TABLE public.students_testt;
+
+
+-- DML (Data Manipulation Language) operations: INSERT, UPDATE, DELETE
+-- Inserting data
+INSERT INTO public.facebook_campaign_copy (
+    campaign_id, campaign_name
+)
+VALUES (
+    'newcampaign227', 'new campaign'
+);
+
+
+-- Selecting all from facebook_campaign_copy
+SELECT * FROM public.facebook_campaign_copy;
+
+
+-- Updating data
+UPDATE public.facebook_campaign_copy
+SET campaign_name = 'brand'
+WHERE campaign_id = 'newcampaign227';
+
+
+-- Deleting data
+DELETE FROM public.facebook_campaign_copy
+WHERE campaign_id = 'newcampaign227';
+
+
+-- Selecting data with specific columns
+SELECT ad_date, campaign_name, total_spend, total_impressions, total_clicks, total_values
+FROM public.facebook_campaigns_spend_value;
+
+
+-- Joining tables and selecting data
+SELECT 
+    fc.ad_date, campaign_name, 
+    fd.ads_name, fc.total_spend
+FROM public.facebook_campaigns_spend_value fc
+JOIN public.facebook_data fd
+ON fc.campaign_name = fd.campaign_name;
+
+
+-- Ordering and limiting the results
+SELECT ad_date, campaign_name, total_spend, total_impressions, total_clicks, total_values
+FROM public.facebook_campaigns_spend_value
+ORDER BY ad_date DESC
+LIMIT 5;
+
+
+-- Selecting data with conditions
+SELECT * FROM fb.ads_basic_daily fabd
+WHERE spend > 50
+ORDER BY spend DESC
+LIMIT 5;
+
+
+-- Selecting table schema and privileges
+SELECT table_schema, table_name
+FROM information_schema.table_privileges
+WHERE grantee = CURRENT_USER
+AND table_schema = 'homeworks';
+
+
+-- Selecting from HR schema
+SELECT * FROM 'HR'.employees;
+
+
+-- Selecting with conditions and ordering
+SELECT 
+    first_name,
+    last_name,
+    salary
+FROM 'HR'.employees
+WHERE salary BETWEEN 4001 AND 8999
+ORDER BY salary DESC;
+
+
+-- Selecting with condition on phone number
+SELECT 
+    first_name,
+    last_name,
+    salary
+FROM 'HR'.employees
+WHERE phone_number IS NOT NULL
+ORDER BY salary DESC;
+
+
+-- Using LIKE for pattern matching
+SELECT 
+    first_name,
+    last_name,
+    salary
+FROM 'HR'.employees
+WHERE salary IN (6900, 9000, 1200)
+AND first_name LIKE 'n%'
+ORDER BY salary DESC;
+
+
+-- Calculating cost per click
+SELECT 
+    ad_date, 
+    spend,
+    clicks,
+    spend / clicks AS cpc
+FROM fabd
+WHERE clicks > 0
+ORDER BY ad_date DESC;
+
+
+-- Casting and extracting date parts
+SELECT CAST('123' AS INTEGER);
+SELECT CAST(123.45 AS FLOAT);
+SELECT CAST(CURRENT_DATE AS VARCHAR);
+SELECT CAST('2023-04-21' AS DATE);
+
+
+-- Calculating age
+SELECT EXTRACT(YEAR FROM AGE(CURRENT_DATE, '1985-03-22'::DATE)) AS age;
+SELECT EXTRACT(YEAR FROM AGE('2024-06-05'::DATE, '1985-03-22'::DATE)) AS age;
+
+
+-- Aggregating data
+SELECT 
+    SUM(salary),
+    department_id
+FROM 'HR'.employees
+GROUP BY department_id
+ORDER BY department_id;
+
+
+-- More aggregations with aliases and conditions
+SELECT 
+    department_id AS department, 
+    COUNT(employee_id),
+    AVG(salary)::FLOAT AS average,
+    MIN(salary) AS minimum_salary,
+    MAX(salary) AS maximum_salary
+FROM 'HR'.employees
+WHERE salary > 5000
+GROUP BY department_id;
+
+
+-- Joining tables
+SELECT * FROM 'HR'.countries;
+SELECT * FROM 'HR'.locations;
+SELECT * FROM 'HR'.countries c
+JOIN "HR".locations l
+ON c.country_id = l.country_id;
+
+
+-- Using different types of joins
+SELECT * FROM 'HR'.countries
+CROSS JOIN 'HR'.locations;
+
+
+SELECT 
+    c.country_id, c.country_name, l.street_address, l.location_id
+FROM "HR".locations l
+JOIN "HR".countries c
+ON c.country_id = l.country_id
+JOIN "HR".departments d
+ON l.location_id = d.location_id;
+
+
+-- Filtering with inequality
+SELECT * FROM "HR".departments
+WHERE location_id <> 1700;
+
+
+-- Filtering with IN and ordering
+SELECT * FROM "HR".employees
+WHERE department_id IN (1, 3, 9, 10, 12)
+ORDER BY first_name, last_name;
+
+
+-- Subquery in WHERE clause
+SELECT * FROM "HR".employees
+WHERE department_id IN (
+    SELECT department_id 
+    FROM "HR".departments
+    WHERE location_id = 1700
+);
+
+
+-- Selecting and ordering salaries
+SELECT salary FROM "HR".employees
+ORDER BY 1 DESC;
+
+
+-- Using subquery in WHERE clause for comparison
+SELECT 
+    first_name, last_name, salary
+FROM "HR".employees 
+WHERE salary > (
+    SELECT MAX(salary) 
+    FROM "HR".employees
+)
+ORDER BY salary DESC;
+
+
+-- Using Common Table Expressions (CTEs)
+WITH AvgSalary AS (
+    SELECT department_id, AVG(salary) AS avg_salary
+    FROM "HR".employees
+    GROUP BY department_id
+)
+SELECT * FROM AvgSalary;
+
+
+WITH LocationsInCountries AS (
+    SELECT * 
+    FROM "HR".countries c
+    JOIN "HR".locations l
+    ON c.country_id = l.country_id
+    WHERE country_name IN ('United States of America', 'United Kingdom', 'China')
+)
+SELECT * FROM LocationsInCountries
+WHERE location_id > 1500;
+
+
+-- Using UNION and UNION ALL
+SELECT * FROM "HR".employees
+UNION
+SELECT employee_id FROM "HR".dependents;
+
+
+-- Creating tables
+CREATE TABLE public.da_2_test (
+    employee_id INT PRIMARY KEY, 
+    first_name VARCHAR(50),
+    hire_date DATE
+);
+
+
+-- Selecting from created table
+SELECT * FROM public.da_2_test;
+
+
+-- Creating views
+CREATE VIEW public.da_2_locations AS
+SELECT *
+FROM "HR".employees
+WHERE department_id IN (
+    SELECT department_id
+    FROM "HR".departments d
+    WHERE location_id = 1700
+);
+
+
+-- Selecting from created view
+SELECT * FROM public.da_2_locations
+WHERE employee_id IN (100, 101, 111, 114);
+
+
+-- Creating materialized view
+CREATE MATERIALIZED VIEW public.da_2_locations_2 AS
+SELECT *
+FROM "HR".employees
+WHERE department_id IN (
+    SELECT department_id
+    FROM "HR".departments d
+    WHERE location_id = 1700
+);
+
+
+-- Selecting from materialized view
+SELECT * FROM public.da_2_locations_2;
+
+
+-- Querying with LIKE and regex
+SELECT *
+FROM "HR".employees
+WHERE last_name LIKE '%A%';
+
+
+SELECT 
+    first_name, 
+    last_name, 
+    hire_date,
+    CASE (2023 - EXTRACT(YEAR FROM hire_date))
+        WHEN 1 THEN '0-1 years'
+        WHEN 3 THEN '3 years'
+    END AS anniversary
+FROM "HR".employees;
+
+
+-- Concatenation and string functions
+SELECT 
+    CONCAT(first_name, ' ', last_name, ' ', employee_id) AS full_name
+FROM "HR".employees;
+
+
+-- Using CONCAT_WS with a separator
+SELECT 
+    CONCAT_WS(' ', first_name, last_name, employee_id) AS full_name
+FROM "HR".employees;
+
+
+-- Getting the length of strings
+SELECT 
+    first_name, 
+    LENGTH(first_name) AS total_letters_first_name
+FROM "HR".employees;
+
+
+-- Using CONCAT and LENGTH functions
+SELECT 
+    CONCAT(first_name, ' ', last_name) AS full_name_beginning,
+    CONCAT(first_name, ' ', last_name, ' ') AS full_name_end,
+    CONCAT(' ', first_name, ' ', last_name, ' ') AS full_name,
+    CONCAT_WS(' ', first_name, last_name) AS full_name,
+    LENGTH(CONCAT(first_name, ' ', last_name, ' ')) AS total_characters,
+    LENGTH(TRIM(LEADING FROM CONCAT(first_name, ' ', last_name))) AS trimmed_beginning,
+    LENGTH(TRIM(TRAILING FROM CONCAT(first_name, ' ', last_name))) AS trimmed_end
+FROM "HR".employees;
+
+
+-- Using pattern matching with LIKE
+SELECT 
+    CONCAT(' ', first_name, ' ') AS full_name_beginning
+FROM "HR".employees
+WHERE CONCAT(' ', first_name, ' ') LIKE '%Steven%';
+
+
+-- Updating data with TRIM function
+UPDATE "HR".employees
+SET first_name = TRIM(first_name);
+
+
+-- Converting to uppercase
+SELECT 
+    UPPER(first_name)
+FROM "HR".employees;
+
+
+-- Filtering with UPPER and regex
+SELECT 
+    employee_id,
+    first_name
+FROM "HR".employees
+WHERE UPPER(first_name) = 'STEVEN';
+
+
+SELECT 
+    employee_id,
+    first_name
+FROM "HR".employees
+WHERE first_name ~ 'steven';
+
+
+-- Using SUBSTRING and LENGTH functions
+SELECT 
+    employee_id,
+    first_name,
+    SUBSTRING(first_name, 1, 4) AS first_letters,
+    LENGTH(first_name) AS length
+FROM "HR".employees;
+
+
+-- Grouping and filtering with HAVING
+SELECT 
+    first_name,
+    SUBSTRING(first_name, 1, 1) AS first_letter,
+    LENGTH(first_name) AS length
+FROM "HR".employees
+GROUP BY first_name
+HAVING LENGTH(first_name) > 5;
+
+
+-- Using COALESCE function
+SELECT 
+    COALESCE(NULL, 1, 2, 3);
+
+
+-- Using CASE statements
+SELECT 
+    first_name,
+    last_name,
+    hire_date,
+    CASE (2023 - EXTRACT(YEAR FROM hire_date))
+        WHEN 1 THEN '0-1 years'
+        WHEN 3 THEN '3 years'
+    END AS anniversary
+FROM "HR".employees;

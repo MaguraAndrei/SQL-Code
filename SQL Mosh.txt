@@ -1,0 +1,1410 @@
+﻿2 SELECT STATEMENT
+
+
+USE SQL_store;
+SELECT *
+FROM customers
+WHERE customer_id = 1
+ORDER BY first_name;
+
+
+3 SELECT CLAUSE
+
+
+SELECT
+    last_name,
+    first_name,
+    points,
+    (points + 10) * 10 AS 'discount_factor'
+FROM Customers;
+
+
+SELECT DISTINCT state
+FROM customers;
+
+
+SELECT name, unit_price, unit_price * 1.1 AS new_price
+FROM Products;
+
+
+4 WHERE CLAUSE
+
+
+SELECT *
+FROM Customers
+WHERE points > 3000;
+
+
+---
+> 
+>= 
+< 
+<= 
+!= 
+<>
+
+
+SELECT *
+FROM Customers
+WHERE state = 'VA';
+--WHERE state = 'VA'
+--WHERE birth_date > '1990-01-01';
+
+
+SELECT *
+FROM orders
+WHERE order_date >= '2019-01-01';
+
+
+The AND, OR, NOT operators
+SELECT *
+FROM Customers
+WHERE birth_date > '1990-01-01' OR 
+(points > 1000 AND state = 'VA');
+
+
+SELECT *        
+FROM Customers        
+WHERE NOT (birth_date > '1990-01-01' OR points > 1000);
+--(same as above) WHERE (birth_date <= '1990-01-01' AND points <= 1000)
+
+
+SELECT *
+FROM order_items
+WHERE order_id = 6 AND unit_price * quantity > 30;
+
+
+6 IN OPERATOR
+
+
+SELECT *
+FROM Customers
+WHERE state = 'VA' OR state = 'GA' OR state = 'FL';
+--Same 
+SELECT *
+FROM Customers
+WHERE state IN ('VA', 'FL', 'GA');
+-- WHERE state NOT IN ('VA', 'FL', 'GA');
+
+
+SELECT *
+FROM products
+WHERE quantity_in_stock IN (49, 38, 72);
+
+
+7 BETWEEN OPERATOR
+
+
+SELECT *
+FROM customers
+WHERE points >= 1000 AND points <= 3000;
+
+
+SELECT *
+FROM customers
+WHERE points BETWEEN 1000 AND 3000;
+
+
+SELECT *
+FROM customers
+WHERE birth_date BETWEEN '1990-01-01' AND '2000-01-01';
+
+
+8 LIKE
+
+
+SELECT *
+FROM customers
+WHERE last_name LIKE 'b%'; -- any number of characters after b
+--WHERE last_name LIKE 'brush%'
+--WHERE last_name LIKE '%b%' any number of characters before and after b
+--WHERE last_name LIKE '%y'
+--WHERE last_name LIKE '_y' second character should be y, the first one doesn’t matter 
+--WHERE last_name LIKE '____y' the fifth character should be y
+--WHERE last_name LIKE 'B___y' the fifth character should be y and the first b
+--% any number of characters
+--_ single character
+
+
+SELECT *
+FROM customers
+WHERE address LIKE '%trail%' OR address LIKE '%avenue%';
+
+
+SELECT *
+FROM customers
+WHERE phone LIKE '%9';
+
+
+9 REGEX
+
+
+SELECT *
+FROM customers
+WHERE last_name LIKE '%field%';
+--same
+--WHERE last_name REGEXP 'field'
+--^ caret beginning of a string
+--$ end of a string
+--| pipe/vertical bar
+WHERE last_name REGEXP '^field';
+-- last name is field
+WHERE last_name REGEXP 'field|mac|rose';
+WHERE last_name REGEXP '^field|mac|rose';
+WHERE last_name REGEXP 'field$|mac|rose';
+WHERE last_name REGEXP '[gim]e'; -- ge, ie, Me
+WHERE last_name REGEXP 'e[fmg]';
+WHERE last_name REGEXP '[a-h]e';
+-- ^beginning
+-- $ end
+-- | logical or
+-- [abed]
+-- [a—f]
+-- Get the customers whose first names are ELKA or AMBUR
+SELECT *
+FROM customers
+WHERE first_name REGEXP 'elka|ambur';
+
+
+-- last names end with EY or ON
+SELECT *
+FROM customers
+WHERE last_name REGEXP 'ey$|on$';
+
+
+-- last names start with MY or contain SE
+SELECT *
+FROM customers
+WHERE last_name REGEXP 'my|se';
+
+
+-- last names contain B followed by R or U
+SELECT *
+FROM customers
+WHERE last_name REGEXP 'b[ru]';
+--WHERE last_name REGEXP 'br|bu';
+
+
+10 NULL
+
+
+SELECT *
+FROM customers
+WHERE phone IS NULL;
+-- WHERE phone IS NOT NULL
+-- Get the orders that are not shipped
+SELECT *
+FROM orders
+WHERE shipper_id IS NULL;
+
+
+11 ORDER BY
+
+
+SELECT *
+FROM customers
+ORDER BY first_name DESC, state;
+--ORDER BY state DESC, first_name DESC
+
+
+SELECT first_name, last_name, 10 AS points
+FROM customers
+ORDER BY birth_date;
+-- ORDER BY points, first_name
+-- ORDER BY 1, 2
+
+
+SELECT birth_date, first_name, last_name, 10 AS points
+FROM customers
+ORDER BY first_name;
+
+
+SELECT *, quantity * unit_price AS total_price
+FROM order_items
+WHERE order_id = 2
+ORDER BY total_price DESC;
+
+
+12 LIMIT
+
+
+SELECT *
+FROM customers
+LIMIT 3;
+-- page 1: 1 - 3
+-- page 2: 4 - 6
+-- page 3: 7 - 9
+
+
+LIMIT 6, 3;
+-- page 3: 7 - 9
+
+
+-- Get the top three loyal customers
+SELECT *
+FROM customers
+ORDER BY points DESC
+LIMIT 3;
+
+
+3.1 INNER JOINS
+
+
+SELECT order_id, o.customer_id, first_name, last_name
+FROM orders o
+JOIN customers c ON o.customer_id = c.customer_id;
+
+
+SELECT order_id, oi.product_id, quantity, oi.unit_price
+FROM order_items oi
+JOIN products p ON oi.product_id = p.product_id;
+
+
+2 JOINING ACROSS DATABASES
+
+
+SELECT *
+FROM order_items oi
+JOIN sql_inventory.products p ON oi.product_id = p.product_id;
+
+
+USE sql_inventory;
+SELECT *
+FROM sql_store.order_items oi
+JOIN products p ON oi.product_id = p.product_id;
+
+
+3 SELF JOINS
+
+
+USE sql_hr;
+
+
+SELECT
+    e.employee_id,
+    e.first_name,
+    m.first_name AS manager
+FROM employees e
+JOIN employees m ON e.reports_to = m.employee_id;
+
+
+4 JOINING MULTIPLE TABLES
+
+
+USE sql_store;
+SELECT 
+    o.order_id,
+    o.order_date,
+    c.first_name,
+    c.last_name,
+    os.name AS status
+FROM orders o
+JOIN customers c ON o.customer_id = c.customer_id
+JOIN order_statuses os ON o.status = os.order_status_id;
+
+
+USE sql_invoicing;
+SELECT
+    p.date,
+    p.invoice_id,
+    p.amount,
+    c.name,
+    pm.name
+FROM payments p
+JOIN clients c ON p.client_id = c.client_id
+JOIN payment_methods pm ON p.payment_method = pm.payment_method_id;
+
+
+5 COMPOUND JOIN CONDITIONS
+
+
+SELECT *
+FROM order_items oi
+JOIN order_item_notes oin
+ON oi.order_id = oin.order_id
+AND oi.product_id = oin.product_id;
+
+
+6 IMPLICIT JOIN SYNTAX
+
+
+SELECT *
+FROM orders o
+JOIN customers c ON o.customer_id = c.customer_id;
+-- Implicit Join Syntax
+SELECT *
+FROM orders o, customers c
+WHERE o.customer_id = c.customer_id;
+
+
+7 OUTER JOINS
+
+
+SELECT
+    c.customer_id,
+    c.first_name,
+    o.order_id
+FROM customers c
+LEFT JOIN orders o ON c.customer_id = o.customer_id
+ORDER BY c.customer_id;
+
+
+SELECT
+    p.product_id,
+    p.name,
+    oi.quantity
+FROM products p
+LEFT JOIN order_items oi ON p.product_id = oi.product_id;
+
+
+8 OUTER JOIN BETWEEN MULTIPLE TABLES
+
+
+SELECT
+    c.customer_id,
+    c.first_name,
+    o.order_id,
+    sh.name AS shipper
+FROM customers c
+LEFT JOIN orders o ON c.customer_id = o.customer_id
+LEFT JOIN shippers sh ON o.shipper_id = sh.shipper_id
+ORDER BY c.customer_id;
+
+
+SELECT
+    o.order_id,
+    o.order_date,
+    c.first_name AS customer,
+    sh.name AS shipper,
+    os.name AS status
+FROM orders o
+JOIN customers c ON o.customer_id = c.customer_id
+LEFT JOIN shippers sh ON o.shipper_id = sh.shipper_id
+JOIN order_statuses os ON o.status = os.order_status_id;
+
+
+9 SELF OUTER JOINS
+
+
+USE sql_hr;
+SELECT
+    e.employee_id,
+    e.first_name,
+    m.first_name AS manager
+FROM employees e
+LEFT JOIN employees m ON e.reports_to = m.employee_id;
+
+
+10 USING CLAUSE
+
+
+SELECT
+    o.order_id,
+    c.first_name,
+    sh.name AS shipper
+FROM orders o
+JOIN customers c USING (customer_id)
+LEFT JOIN shippers sh USING (shipper_id);
+
+
+SELECT *
+FROM order_items oi
+JOIN order_item_notes oin USING (order_id, product_id);
+
+
+USE sql_invoicing;
+SELECT
+    p.date,
+    c.name AS client,
+    p.amount,
+    pm.name AS payment_method
+FROM payments p
+JOIN clients c USING (client_id)
+JOIN payment_methods pm ON p.payment_method = pm.payment_method_id;
+
+
+11 NATURAL JOINS
+
+
+SELECT
+    o.order_id,
+    c.first_name
+FROM orders o
+NATURAL JOIN customers c;
+
+
+12 CROSS JOIN
+
+
+SELECT
+    c.first_name AS customer,
+    p.name AS product
+FROM customers c
+CROSS JOIN products p;
+
+
+3.2 Subqueries
+
+
+1 SUBQUERIES WITH SELECT
+
+
+SELECT
+    first_name,
+    last_name,
+    points
+FROM customers
+WHERE points > (SELECT AVG(points) FROM customers);
+
+
+SELECT *
+FROM customers
+WHERE points = (SELECT MAX(points) FROM customers);
+
+
+SELECT
+    product_id,
+    name,
+    unit_price
+FROM products
+WHERE unit_price = (SELECT MIN(unit_price) FROM products);
+
+
+2 Subqueries with FROM
+
+
+SELECT AVG(points)
+FROM customers;
+
+
+SELECT
+    state,
+    points
+FROM customers;
+
+
+SELECT
+    state,
+    AVG(points)
+FROM customers
+GROUP BY state;
+
+
+SELECT
+    c.first_name,
+    c.last_name,
+    c.state,
+    c.points
+FROM customers c
+JOIN (SELECT state, AVG(points) AS points_avg FROM customers GROUP BY state) AS ca
+ON c.state = ca.state
+WHERE c.points > ca.points_avg;
+
+
+3 Subqueries with JOIN
+
+
+USE sql_store;
+SELECT
+    o.order_id,
+    c.first_name,
+    c.last_name,
+    o.order_date
+FROM orders o
+JOIN customers c ON o.customer_id = c.customer_id
+WHERE o.order_date = (SELECT MAX(order_date) FROM orders);
+
+
+4 Subqueries with WHERE/SELECT
+
+
+SELECT
+    c.first_name,
+    c.last_name
+FROM customers c
+WHERE EXISTS (
+    SELECT o.order_id
+    FROM orders o
+    WHERE o.customer_id = c.customer_id);
+
+
+SELECT
+    c.first_name,
+    c.last_name
+FROM customers c
+WHERE c.points > 2000
+AND NOT EXISTS (
+    SELECT *
+    FROM orders o
+    WHERE o.customer_id = c.customer_id);
+
+
+SELECT
+    first_name,
+    last_name
+FROM customers
+WHERE points > ALL (SELECT points FROM customers WHERE state = 'VA');
+
+
+SELECT
+    first_name,
+    last_name
+FROM customers
+WHERE points > ANY (SELECT points FROM customers WHERE state = 'VA');
+
+
+5 Subqueries with FROM/JOIN/WHERE
+
+
+USE sql_store;
+SELECT
+    p.product_id,
+    p.name
+FROM products p
+JOIN order_items oi ON p.product_id = oi.product_id
+WHERE oi.unit_price = (
+    SELECT MAX(oi2.unit_price)
+    FROM order_items oi2
+    WHERE oi2.product_id = p.product_id);
+
+
+USE sql_store;
+SELECT
+    c.first_name,
+    c.last_name,
+    COUNT(o.order_id) AS order_count
+FROM customers c
+JOIN orders o ON c.customer_id = o.customer_id
+GROUP BY c.customer_id
+HAVING COUNT(o.order_id) = (
+    SELECT COUNT(o2.order_id)
+    FROM orders o2
+    GROUP BY o2.customer_id
+    ORDER BY COUNT(o2.order_id) DESC
+    LIMIT 1);
+    
+4.3 Set Operations
+
+
+1 UNION/UNION ALL
+
+
+SELECT first_name, last_name, 'employee' AS Type
+FROM sql_hr.employees
+UNION
+SELECT first_name, last_name, 'customer' AS Type
+FROM sql_store.customers;
+
+
+SELECT first_name, last_name, 'employee' AS Type
+FROM sql_hr.employees
+UNION ALL
+SELECT first_name, last_name, 'customer' AS Type
+FROM sql_store.customers;
+
+
+SELECT birth_date, first_name
+FROM employees
+UNION ALL
+SELECT birth_date, first_name
+FROM customers;
+
+
+SELECT product_id, name
+FROM products
+WHERE product_id < 3
+UNION ALL
+SELECT product_id, name
+FROM products
+WHERE product_id > 3;
+
+
+2 INTERSECT
+
+
+USE sql_store;
+SELECT product_id, name
+FROM products
+WHERE product_id < 5
+INTERSECT
+SELECT product_id, name
+FROM products
+WHERE product_id > 3;
+
+
+3 EXCEPT
+
+
+SELECT product_id, name
+FROM products
+WHERE product_id < 5
+EXCEPT
+SELECT product_id, name
+FROM products
+WHERE product_id > 3;
+
+
+5.2 INSERT/INSERT INTO
+
+
+1 INSERT
+
+
+INSERT INTO customers
+(first_name, last_name, birth_date, phone, address, city, state, points)
+VALUES
+('Donald', 'Trump', '1946-06-14', '202-555-0148', '725 Fifth Avenue', 'New York', 'NY', 6000),
+('Joe', 'Biden', '1942-11-20', '302-555-0198', '1600 Pennsylvania Avenue', 'Washington', 'DC', 4500);
+
+
+SELECT *
+FROM customers;
+
+
+INSERT INTO shippers (name)
+VALUES ('Shipper X'), ('Shipper Y'), ('Shipper Z');
+
+
+SELECT *
+FROM shippers;
+
+
+USE sql_hr;
+INSERT INTO employees
+(first_name, last_name, job_title, salary, department_id, reports_to, birth_date)
+VALUES
+('James', 'Smith', 'CEO', 300000, 1, NULL, '1970-05-15');
+
+
+USE sql_store;
+INSERT INTO customers
+(first_name, last_name, birth_date, phone, address, city, state, points)
+SELECT
+    first_name,
+    last_name,
+    birth_date,
+    phone,
+    address,
+    city,
+    state,
+    points
+FROM customers
+WHERE points > 3000;
+
+
+SELECT *
+FROM customers;
+
+
+2 INSERT INTO SELECT
+
+
+USE sql_store;
+INSERT INTO customers
+(first_name, last_name, birth_date, phone, address, city, state, points)
+SELECT
+    first_name,
+    last_name,
+    birth_date,
+    phone,
+    address,
+    city,
+    state,
+    points
+FROM customers
+WHERE points > 3000;
+
+
+USE sql_invoicing;
+INSERT INTO clients
+(name, city, state)
+VALUES
+('Microsoft', 'Redmond', 'WA'),
+('Google', 'Mountain View', 'CA'),
+('Amazon', 'Seattle', 'WA');
+
+
+3 INSERT DEFAULT VALUES
+
+
+USE sql_store;
+INSERT INTO shippers (name)
+VALUES ('Shipper X'), ('Shipper Y'), ('Shipper Z');
+
+
+SELECT *
+FROM shippers;
+
+
+4 INSERT MULTIPLE ROWS
+
+
+INSERT INTO clients
+(name, city, state)
+VALUES
+('Apple', 'Cupertino', 'CA'),
+('Tesla', 'Palo Alto', 'CA');
+
+
+5.3 UPDATE
+
+
+1 UPDATE
+
+
+USE sql_store;
+UPDATE customers
+SET points = points + 100
+WHERE state = 'CA';
+
+
+UPDATE customers
+SET points = points + 100, state = 'NY'
+WHERE state = 'CA';
+
+
+UPDATE customers
+SET points = points + 100, state = 'NY';
+
+
+UPDATE customers
+SET state = 'NY'
+WHERE state = 'CA';
+
+
+2 UPDATE & SUBQUERY
+
+
+UPDATE customers
+SET points = points + 100
+WHERE customer_id = (
+    SELECT customer_id
+    FROM orders
+    WHERE order_id = 100);
+
+
+3 UPDATE MULTIPLE COLUMNS
+
+
+UPDATE customers
+SET points = points + 100, state = 'NY'
+WHERE state = 'CA';
+
+
+4 UPDATE MULTIPLE ROWS
+
+
+UPDATE customers
+SET state = 'NY'
+WHERE state = 'CA';
+
+
+5 UPDATE & JOIN
+
+
+USE sql_store;
+UPDATE customers c
+JOIN orders o ON c.customer_id = o.customer_id
+SET c.points = c.points + 100
+WHERE o.order_id = 1;
+
+
+6.3 DELETE
+
+
+1 DELETE
+
+
+USE sql_store;
+DELETE FROM customers
+WHERE points = 0;
+
+
+SELECT *
+FROM customers;
+
+
+2 DELETE & JOIN
+
+
+USE sql_store;
+DELETE c
+FROM customers c
+JOIN orders o ON c.customer_id = o.customer_id
+WHERE o.order_date < '2019-01-01';
+
+
+SELECT *
+FROM customers;
+
+
+3 TRUNCATE
+
+
+USE sql_store;
+TRUNCATE TABLE customers;
+
+
+6.4 MERGE/UPSERT
+
+
+1 MERGE
+
+
+USE sql_store;
+MERGE INTO customers c
+USING (SELECT customer_id, points FROM customers WHERE customer_id = 1) src
+ON (c.customer_id = src.customer_id)
+WHEN MATCHED THEN
+    UPDATE SET c.points = src.points + 100
+WHEN NOT MATCHED THEN
+    INSERT (customer_id, points)
+    VALUES (src.customer_id, src.points);
+
+
+2 UPSERT
+
+
+INSERT INTO customers (customer_id, points)
+VALUES (1, 100)
+ON DUPLICATE KEY UPDATE points = points + 100;
+
+
+6.5 TRANSACTIONS
+
+
+1 BEGIN TRANSACTION/COMMIT/ROLLBACK
+
+
+START TRANSACTION;
+
+
+UPDATE customers
+SET points = points + 100
+WHERE customer_id = 1;
+
+
+COMMIT;
+
+
+ROLLBACK;
+
+
+2 SAVEPOINT/ROLLBACK TO SAVEPOINT
+
+
+START TRANSACTION;
+
+
+UPDATE customers
+SET points = points + 100
+WHERE customer_id = 1;
+
+
+SAVEPOINT sp1;
+
+
+UPDATE customers
+SET points = points + 200
+WHERE customer_id = 2;
+
+
+ROLLBACK TO SAVEPOINT sp1;
+
+
+COMMIT;
+
+
+6.6 VIEWS
+
+
+1 CREATE VIEW
+
+
+CREATE VIEW vip_customers AS
+SELECT
+    customer_id,
+    first_name,
+    last_name,
+    points
+FROM customers
+WHERE points > 1000;
+
+
+SELECT *
+FROM vip_customers;
+
+
+2 CREATE OR REPLACE VIEW
+
+
+CREATE OR REPLACE VIEW vip_customers AS
+SELECT
+    customer_id,
+    first_name,
+    last_name,
+    points
+FROM customers
+WHERE points > 3000;
+
+
+SELECT *
+FROM vip_customers;
+
+
+3 DROP VIEW
+
+
+DROP VIEW vip_customers;
+
+
+6.7 INDEXES
+
+
+1 CREATE INDEX
+
+
+CREATE INDEX idx_customers_points ON customers (points);
+
+
+2 CREATE UNIQUE INDEX
+
+
+CREATE UNIQUE INDEX idx_customers_email ON customers (email);
+
+
+3 DROP INDEX
+
+
+DROP INDEX idx_customers_points ON customers;
+
+
+6.8 STORED PROCEDURES
+
+
+1 CREATE PROCEDURE
+
+
+DELIMITER //
+CREATE PROCEDURE AddPoints (IN customer_id INT, IN points INT)
+BEGIN
+    UPDATE customers
+    SET points = points + points
+    WHERE customer_id = customer_id;
+END //
+DELIMITER ;
+
+
+CALL AddPoints(1, 100);
+
+
+2 CREATE PROCEDURE WITH OUT PARAMETERS
+
+
+DELIMITER //
+CREATE PROCEDURE GetPoints (IN customer_id INT, OUT points INT)
+BEGIN
+    SELECT points INTO points
+    FROM customers
+    WHERE customer_id = customer_id;
+END //
+DELIMITER ;
+
+
+CALL GetPoints(1, @points);
+SELECT @points;
+
+
+3 CREATE PROCEDURE WITH INOUT PARAMETERS
+
+
+DELIMITER //
+CREATE PROCEDURE UpdatePoints (INOUT customer_id INT, IN points INT)
+BEGIN
+    UPDATE customers
+    SET points = points + points
+    WHERE customer_id = customer_id;
+    SELECT points INTO customer_id
+    FROM customers
+    WHERE customer_id = customer_id;
+END //
+DELIMITER ;
+
+
+CALL UpdatePoints(@customer_id, 100);
+SELECT @customer_id;
+
+
+4 DROP PROCEDURE
+
+
+DROP PROCEDURE AddPoints;
+
+
+6.9 TRIGGERS
+
+
+1 CREATE TRIGGER
+
+
+CREATE TRIGGER before_customer_update
+BEFORE UPDATE ON customers
+FOR EACH ROW
+BEGIN
+    IF NEW.points < 0 THEN
+        SET NEW.points = 0;
+    END IF;
+END;
+
+
+2 DROP TRIGGER
+
+
+DROP TRIGGER before_customer_update;
+
+
+7.1 USER MANAGEMENT
+
+
+1 CREATE USER
+
+
+CREATE USER 'new_user'@'localhost' IDENTIFIED BY 'password';
+
+
+2 GRANT PRIVILEGES
+
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON sql_store.* TO 'new_user'@'localhost';
+
+
+3 REVOKE PRIVILEGES
+
+
+REVOKE INSERT, DELETE ON sql_store.* FROM 'new_user'@'localhost';
+
+
+4 DROP USER
+
+
+DROP USER 'new_user'@'localhost';
+
+
+7.2 DATABASE MANAGEMENT
+
+
+1 CREATE DATABASE
+
+
+CREATE DATABASE sql_store;
+
+
+2 DROP DATABASE
+
+
+DROP DATABASE sql_store;
+
+
+3 BACKUP DATABASE
+
+
+BACKUP DATABASE sql_store
+TO DISK = 'C:\backup\sql_store.bak';
+
+
+4 RESTORE DATABASE
+
+
+RESTORE DATABASE sql_store
+FROM DISK = 'C:\backup\sql_store.bak';
+
+
+7.3 SECURITY
+
+
+1 ENCRYPTION
+
+
+ALTER TABLE customers
+ADD COLUMN email VARCHAR(255) ENCRYPTED;
+
+
+2 DECRYPTION
+
+
+SELECT DECRYPT(email) FROM customers;
+
+
+7.4 PERFORMANCE TUNING
+
+
+1 QUERY OPTIMIZATION
+
+
+EXPLAIN SELECT * FROM customers WHERE points > 1000;
+
+
+2 INDEX TUNING
+
+
+ANALYZE TABLE customers;
+
+
+3 QUERY CACHE
+
+
+SET GLOBAL query_cache_size = 1048576;
+SET GLOBAL query_cache_type = 1;
+
+
+SELECT SQL_CACHE * FROM customers WHERE points > 1000;
+
+
+4 CONNECTION POOLING
+
+
+SET GLOBAL max_connections = 1000;
+
+
+7.5 DATA IMPORT/EXPORT
+
+
+1 DATA IMPORT
+
+
+LOAD DATA INFILE 'C:/path/to/data.csv'
+INTO TABLE customers
+FIELDS TERMINATED BY ','
+ENCLOSED BY '"'
+LINES TERMINATED BY '\n'
+IGNORE 1 LINES;
+
+
+2 DATA EXPORT
+
+
+SELECT *
+INTO OUTFILE 'C:/path/to/data.csv'
+FIELDS TERMINATED BY ','
+ENCLOSED BY '"'
+LINES TERMINATED BY '\n'
+FROM customers;
+
+
+-- Section 10: Events
+
+
+-- Creating an Event
+DELIMITER $$
+CREATE EVENT yearly_delete_stale_audit_rows
+ON SCHEDULE
+EVERY 1 YEAR STARTS '2019-01-01' ENDS '2029-01-01'
+DO BEGIN
+    DELETE FROM payments_audit
+    WHERE action_date < NOW() - INTERVAL 1 YEAR;
+END $$
+DELIMITER ;
+
+
+-- Viewing and Dropping Events
+SHOW EVENTS LIKE 'yearly%';
+DROP EVENT IF EXISTS yearly_delete_stale_audit_rows;
+
+
+-- Section 11: Transactions
+
+
+-- Creating a Transaction
+USE sql_store;
+START TRANSACTION;
+INSERT INTO orders (customer_id, order_date, status)
+VALUES (1, '2019-01-01', 'Pending');
+INSERT INTO order_items (order_id, product_id, quantity, unit_price)
+VALUES (LAST_INSERT_ID(), 1, 1, 1);
+COMMIT;
+
+
+-- Concurrency and Locking
+START TRANSACTION;
+UPDATE customers
+SET points = points + 10
+WHERE customer_id = 1;
+COMMIT;
+
+
+-- Transaction Isolation Levels
+SHOW VARIABLES LIKE 'transaction_isolation';
+SET SESSION TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+
+
+-- READ UNCOMMITTED Isolation Level
+SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;
+START TRANSACTION;
+SELECT points FROM customers WHERE customer_id = 1;
+UPDATE customers SET points = 20 WHERE customer_id = 1;
+COMMIT;
+
+
+-- READ COMMITTED Isolation Level
+SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
+START TRANSACTION;
+SELECT points FROM customers WHERE customer_id = 1;
+UPDATE customers SET points = 20 WHERE customer_id = 1;
+COMMIT;
+
+
+-- REPEATABLE READ Isolation Level
+SET TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+START TRANSACTION;
+SELECT * FROM customers WHERE state = 'VA';
+UPDATE customers SET state = 'VA' WHERE customer_id = 1;
+COMMIT;
+
+
+-- SERIALIZABLE Isolation Level
+SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+START TRANSACTION;
+SELECT * FROM customers WHERE state = 'VA';
+UPDATE customers SET state = 'VA' WHERE customer_id = 3;
+COMMIT;
+
+
+-- Deadlocks
+START TRANSACTION;
+UPDATE customers SET state = 'VA' WHERE customer_id = 1;
+UPDATE orders SET status = 1 WHERE order_id = 1;
+COMMIT;
+
+
+START TRANSACTION;
+UPDATE orders SET status = 1 WHERE order_id = 1;
+UPDATE customers SET state = 'VA' WHERE customer_id = 1;
+COMMIT;
+
+
+-- Section 12: JSON Type
+
+
+-- Updating JSON Fields
+UPDATE products
+SET properties = JSON_OBJECT(
+    'weight', 10,
+    'dimensions', JSON_ARRAY(1, 2, 3),
+    'manufacturer', JSON_OBJECT('name', 'Sony')
+)
+WHERE product_id = 1;
+
+
+SELECT product_id, JSON_EXTRACT(properties, '$.weight') FROM products WHERE product_id = 1;
+SELECT product_id, properties->'$.dimensions[0]' FROM products WHERE product_id = 1;
+SELECT product_id, properties->'$.manufacturer.name' FROM products WHERE product_id = 1;
+
+
+-- Removing JSON Fields
+UPDATE products
+SET properties = JSON_REMOVE(properties, '$.age')
+WHERE product_id = 1;
+
+
+-- Section 13: Creating and Dropping Databases
+
+
+CREATE DATABASE IF NOT EXISTS sql_store2;
+DROP DATABASE IF EXISTS sql_store2;
+
+
+-- Creating Tables
+CREATE TABLE IF NOT EXISTS customers (
+    customer_id INT PRIMARY KEY AUTO_INCREMENT,
+    first_name VARCHAR(50) NOT NULL,
+    last_name VARCHAR(50) NOT NULL,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    points INT NOT NULL DEFAULT 0
+);
+
+
+ALTER TABLE customers
+ADD city VARCHAR(50) NOT NULL,
+MODIFY COLUMN first_name VARCHAR(55) DEFAULT '';
+
+
+-- Creating Relationships
+CREATE TABLE orders (
+    order_id INT PRIMARY KEY,
+    customer_id INT NOT NULL,
+    FOREIGN KEY fk_orders_customers (customer_id) REFERENCES customers (customer_id) ON UPDATE CASCADE ON DELETE NO ACTION
+);
+
+
+-- Section 14: Indexes
+
+
+-- Creating Indexes
+CREATE INDEX idx_state ON customers (state);
+CREATE INDEX idx_points ON customers (points);
+
+
+-- Viewing Indexes
+SHOW INDEXES IN customers;
+ANALYZE TABLE customers;
+
+
+-- Prefix Indexes
+CREATE INDEX idx_lastname ON customers (last_name(20));
+
+
+-- Full-Text Indexes
+CREATE FULLTEXT INDEX idx_title_body ON posts (title, body);
+SELECT * FROM posts WHERE MATCH(title, body) AGAINST('react redux' IN BOOLEAN MODE);
+
+
+-- Composite Indexes
+CREATE INDEX idx_state_points ON customers (state, points);
+
+
+-- Using Composite Indexes
+EXPLAIN SELECT customer_id FROM customers WHERE state = 'CA' AND points > 1000;
+
+
+-- Order of Columns in Composite Indexes
+CREATE INDEX idx_lastname_state ON customers (last_name, state);
+EXPLAIN SELECT customer_id FROM customers USE INDEX (idx_lastname_state) WHERE state = 'NY' AND last_name LIKE 'A%';
+
+
+-- When Indexes are Ignored
+EXPLAIN SELECT customer_id FROM customers WHERE state = 'CA' OR points > 1000;
+
+
+-- Using Indexes for Sorting
+EXPLAIN SELECT customer_id FROM customers WHERE state = 'CA' ORDER BY points;
+
+
+-- Covering Indexes
+EXPLAIN SELECT customer_id, state FROM customers ORDER BY state;
+
+
+-- Section 15: Users and Privileges
+
+
+-- Creating a User
+CREATE USER john@127.0.0.1 IDENTIFIED BY '1234';
+CREATE USER john@'%.codewithmosh.com' IDENTIFIED BY '1234';
+CREATE USER john IDENTIFIED BY '1234';
+
+
+-- Viewing Users
+SELECT * FROM mysql.user;
+
+
+-- Dropping Users
+DROP USER bob@codewithmosh.com;
+
+
+-- Changing Passwords
+SET PASSWORD FOR john = 'new_password';
+SET PASSWORD = 'new_password';
+
+
+-- Granting Privileges
+CREATE USER moon_app IDENTIFIED BY '1234';
+GRANT SELECT, INSERT, UPDATE, DELETE, EXECUTE ON sql_store.* TO moon_app;
